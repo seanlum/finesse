@@ -7,18 +7,18 @@
 # Begin Recta encryption
 #======================================================================
 
-g = [ 
-     [ i for i in range(0x00000000, 0x0010FFFF, 1) ],
-     [ j for j in range(0x00000000, 0x0010FFFF, 1) ] 
+g = [
+    [i for i in range(256)],  # All possible byte values (0-255)
+    [j for j in range(256)]
 ]
 
-"""Integers to characters"""
-def i2c(i):
-  return ''.join(chr(j) for j in i)
+"""Binary to integers"""
+def b2i(b):
+    return [int(f'{byte:08b}', 2) for byte in b]
 
-"""Characters to Integers"""
-def c2i(s):
-  return [ ord(c) for c in list(s) ]
+"""Integers to binary"""
+def i2b(i):
+    return bytes(i)
 
 """Handles per character change for Vigenere"""
 def M(n,i,k,c):
@@ -27,17 +27,17 @@ def M(n,i,k,c):
 
 """Encrypts or decrypts Vigenere"""
 def F(x, k):
-  x = c2i(x)
-  y = c2i(k)
-  for e in range(0,len(x)):
-    for i in g:
-      if y[e % len(y)] in i:
-        for h in g:
-          if x[e] in h:
-            x[e] = M(h, i,y[e % len(y)],x[e])
-            break
-        break
-  return i2c(x)
+  x = b2i(x)
+  y = b2i(k)
+  for e in range(0, len(x)):
+      for i in g:
+          if y[e % len(y)] in i:
+              for h in g:
+                  if x[e] in h:
+                      x[e] = M(h, i, y[e % len(y)], x[e])
+                      break
+              break
+  return i2b(x)
   
 """Encrypts p with k in Vigenere"""
 def Encrypt(plaintext, key):

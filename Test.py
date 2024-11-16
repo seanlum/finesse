@@ -241,16 +241,35 @@ class Test(unittest.TestCase):
       return bytes([ord(c) for c in input_string])
 
     def test_recta(self):
-        plaintext = 'This is a test of recta'
-        # key = self.do_string(os.urandom(len(plaintext)))
-        key = str(reversed(plaintext))
-        ciphertext = Recta.Encrypt(plaintext=plaintext, key=key)
-        print(f'Ciphertext: {ciphertext}')
-        print(f'Key: {key}')
-        decrypted = Recta.Decrypt(ciphertext=ciphertext, key=key)
-        print(f'Decrypted: {decrypted}')
-        base64Ciphertext = base64.b64encode(ciphertext.encode('utf-8'))
-        print(f'Cipher Base64: {base64Ciphertext}') 
+        # Read the file in binary mode
+        file = open('ff0f3979-29d3-4000-a635-dc0cb942ec22.webp', 'rb')
+        ciphertext_file = 'ciphertext.dat'
+        key_file = 'recta.key'
+        filebytes = file.read()
+        file.close()
+        # keytext = base64.b64encode(os.urandom(512)).decode('utf-8')
+        # Base64 decode the key
+        keyfile = open(key_file, 'r')
+        keytext = keyfile.read()
+        key = base64.b64decode(keytext)
+        with open(key_file, 'w+') as file:
+          file.write(keytext)
+        print(len(key))  # Print key length for debugging
+        ciphertext = Recta.Encrypt(plaintext=filebytes, key=key)
+        with open(ciphertext_file, 'wb') as file:
+            file.write(ciphertext)
+        with open(ciphertext_file, 'rb') as file:
+            stored_ciphertext = file.read()
+        decrypted = Recta.Decrypt(ciphertext=stored_ciphertext, key=key)
+
+        # Compare original plaintext with decrypted output
+        if filebytes == decrypted:
+            print('Decrypted successfully')
+            output = 'test.webp'
+            with open(output, 'wb') as outputfile:
+                outputfile.write(decrypted)
+        else:
+            print('Decryption failed')
         
 
 if __name__ == '__main__':
