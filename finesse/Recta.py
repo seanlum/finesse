@@ -21,12 +21,12 @@ def c2i(s):
   return [ ord(c) for c in list(s) ]
 
 """Handles per character change for Vigenere"""
-def M(n,i,k,c,m):
+def M(n,i,k,c):
   o = n.index(c)^i.index(k)
   return n[o % len(n)]
 
 """Encrypts or decrypts Vigenere"""
-def F(x, k, m):
+def F(x, k):
   x = c2i(x)
   y = c2i(k)
   for e in range(0,len(x)):
@@ -34,17 +34,17 @@ def F(x, k, m):
       if y[e % len(y)] in i:
         for h in g:
           if x[e] in h:
-            x[e] = M(h, i,y[e % len(y)],x[e],m)
+            x[e] = M(h, i,y[e % len(y)],x[e])
             break
         break
   return i2c(x)
   
 """Encrypts p with k in Vigenere"""
 def Encrypt(plaintext, key):
-  return F(plaintext, key, '+')
+  return F(plaintext, key)
 
 """Decrypts c with k in Vigenere"""
 def Decrypt(ciphertext, key):
-  return F(ciphertext, key, '-')
+  return F(ciphertext, key)
 
 __all__ = ['Encrypt', 'Decrypt']
