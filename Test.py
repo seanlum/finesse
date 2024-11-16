@@ -14,7 +14,7 @@ from pyzbar.pyzbar import decode
 # This code is PoC for learning about encryption and ciphers 
 # This code is not meant to be used on any production system 
 # If it is used on a production system, I have not done adequate testing for it yet.
-from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8
+from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta
 
 class Test(unittest.TestCase):
     barline = '===================================================================================='
@@ -234,7 +234,25 @@ class Test(unittest.TestCase):
       else:
           print('Decryption does not match')
 
-      
+    def do_string(self, input_bytes):
+        return ''.join([ chr(n) for n in input_bytes ])
+
+    def do_to_bytes(self, input_string):
+      return bytes([ord(c) for c in input_string])
+
+    def test_recta(self):
+        plaintext = 'This is a test of recta'
+        # key = self.do_string(os.urandom(len(plaintext)))
+        key = str(reversed(plaintext))
+        ciphertext = Recta.Encrypt(plaintext=plaintext, key=key)
+        print(f'Ciphertext: {ciphertext}')
+        print(f'Key: {key}')
+        decrypted = Recta.Decrypt(ciphertext=ciphertext, key=key)
+        print(f'Decrypted: {decrypted}')
+        base64Ciphertext = base64.b64encode(ciphertext.encode('utf-8'))
+        print(f'Cipher Base64: {base64Ciphertext}') 
+        
 
 if __name__ == '__main__':
-    unittest.main()
+    t = Test()
+    t.test_recta()
