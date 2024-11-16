@@ -14,7 +14,7 @@ from pyzbar.pyzbar import decode
 # This code is PoC for learning about encryption and ciphers 
 # This code is not meant to be used on any production system 
 # If it is used on a production system, I have not done adequate testing for it yet.
-from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta
+from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta, RectaFast
 
 class Test(unittest.TestCase):
     barline = '===================================================================================='
@@ -270,8 +270,33 @@ class Test(unittest.TestCase):
                 outputfile.write(decrypted)
         else:
             print('Decryption failed')
-        
+    
+    def test_rectafast(self):
+      file = open('ff0f3979-29d3-4000-a635-dc0cb942ec22.webp', 'rb')
+      key_file = 'recta.key'
+      # Example data
+      plaintext = file.read()
+      # Base64 decode the key
+      keyfile = open(key_file, 'r')
+      keytext = keyfile.read()
+      key = base64.b64decode(keytext)
+      # Original encryption
+      start = time.time()
+      encrypted = Recta.Encrypt(plaintext, key)
+      print("Original Encrypt Time:", time.time() - start)
+
+      # Optimized encryption
+      start = time.time()
+      encrypted_optimized = RectaFast.Encrypt(plaintext, key)
+      print("Optimized Encrypt Time:", time.time() - start)
+
+      start = time.time()
+      decrypted = RectaFast.Decrypt(encrypted_optimized, key)
+      print("Optimized Decrypt Time:", time.time() - start)
+      # Ensure results are identical
+      self.assertEqual(encrypted, encrypted_optimized)
+      self.assertEqual(decrypted, plaintext)
 
 if __name__ == '__main__':
     t = Test()
-    t.test_recta()
+    t.test_rectafast()
