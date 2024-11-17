@@ -14,7 +14,7 @@ from pyzbar.pyzbar import decode
 # This code is PoC for learning about encryption and ciphers 
 # This code is not meant to be used on any production system 
 # If it is used on a production system, I have not done adequate testing for it yet.
-from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta, RectaFast
+from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta, RectaFast, Daedalus
 
 class Test(unittest.TestCase):
     barline = '===================================================================================='
@@ -296,7 +296,46 @@ class Test(unittest.TestCase):
       # Ensure results are identical
       self.assertEqual(encrypted, encrypted_optimized)
       self.assertEqual(decrypted, plaintext)
+      
+    def test_daedalus(self):
+        # Generate a 512-byte key
+        file = open('daedalus.key', 'rb')
+        key = file.read()
+
+        # Generate 650 KB of 'a'
+        image = open('ff0f3979-29d3-4000-a635-dc0cb942ec22.webp', 'rb')
+        plaintext = image.read()
+
+        print('Encrypting')
+        # Encrypt with Daedalus
+        start = time.time()
+        encrypted = Daedalus.Encrypt(plaintext, key)
+        print("Encrypt Time:", time.time() - start)
+        print('Decrypting')
+        # Decrypt with Daedalus
+        start = time.time()
+        decrypted = Daedalus.Decrypt(encrypted, key)
+        print("Decrypt Time:", time.time() - start)
+        print('Comparing')
+        # Ensure decrypted result matches the original plaintext
+        self.assertEqual(decrypted, plaintext)
+    
+    def test_reverse_lookup(self):
+      key = b'some-test-key'
+      Daedalus.sg(key)
+      g = Daedalus.fg(key)
+
+      for n in range(256):
+          for k in range(256):
+              encrypted = g[n, k]
+              decrypted = None
+              for i in range(256):
+                  if g[i, k] == encrypted:
+                      decrypted = i
+                      break
+              assert decrypted == n, f"Reverse lookup failed for n={n}, k={k}, encrypted={encrypted}, decrypted={decrypted}"
+      print("Reverse lookup test passed")
 
 if __name__ == '__main__':
     t = Test()
-    t.test_rectafast()
+    t.test_daedalus()
