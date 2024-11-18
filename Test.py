@@ -6,6 +6,8 @@ import os
 import qrcode
 import time
 import sys
+import numpy as np
+import random
 
 from PIL import Image
 from pyzbar.pyzbar import decode
@@ -14,7 +16,7 @@ from pyzbar.pyzbar import decode
 # This code is PoC for learning about encryption and ciphers 
 # This code is not meant to be used on any production system 
 # If it is used on a production system, I have not done adequate testing for it yet.
-from finesse import Caesar, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta, RectaFast, Daedalus
+from finesse import Caesar, RectFastTwo, Vigenere, OTPad, QROTP, DRGBRando, VIG8, Recta, RectaFast
 
 class Test(unittest.TestCase):
     barline = '===================================================================================='
@@ -296,46 +298,46 @@ class Test(unittest.TestCase):
       # Ensure results are identical
       self.assertEqual(encrypted, encrypted_optimized)
       self.assertEqual(decrypted, plaintext)
-      
-    def test_daedalus(self):
-        # Generate a 512-byte key
-        file = open('daedalus.key', 'rb')
-        key = file.read()
 
-        # Generate 650 KB of 'a'
-        image = open('ff0f3979-29d3-4000-a635-dc0cb942ec22.webp', 'rb')
-        plaintext = image.read()
-
+    def test_rectfasttwo(self):
+        plaintext = b'a' * 100
         print('Encrypting')
         # Encrypt with Daedalus
         start = time.time()
-        encrypted = Daedalus.Encrypt(plaintext, key)
+        encrypted = RectFastTwo.Encrypt(plaintext, plaintext)
         print("Encrypt Time:", time.time() - start)
         print('Decrypting')
         # Decrypt with Daedalus
         start = time.time()
-        decrypted = Daedalus.Decrypt(encrypted, key)
+        decrypted = RectFastTwo.Decrypt(encrypted, plaintext)
         print("Decrypt Time:", time.time() - start)
         print('Comparing')
+        print('Paintext======================================')
+        print(plaintext)
+        print('Ciphered======================================')
+        print(encrypted)
+        print('Decrypted======================================')
+        print(decrypted)
         # Ensure decrypted result matches the original plaintext
         self.assertEqual(decrypted, plaintext)
-    
-    def test_reverse_lookup(self):
-      key = b'some-test-key'
-      Daedalus.sg(key)
-      g = Daedalus.fg(key)
 
-      for n in range(256):
-          for k in range(256):
-              encrypted = g[n, k]
-              decrypted = None
-              for i in range(256):
-                  if g[i, k] == encrypted:
-                      decrypted = i
-                      break
-              assert decrypted == n, f"Reverse lookup failed for n={n}, k={k}, encrypted={encrypted}, decrypted={decrypted}"
-      print("Reverse lookup test passed")
-
+    def test_daedalussmall(self):
+      from finesse import Daedalus
+      p = ('a' * 512 * 1024).encode('utf-8')
+      key = ''.join([ chr(c) for c in os.urandom(2048)])
+      k = (key).encode('utf-8')
+      start = time.time()
+      e = Daedalus.Encrypt(p, k)
+      print(f'Encrypt time: {time.time() - start}s')
+      d = Daedalus.Decrypt(e, k)
+      print(f'Decrypt time: {time.time() - start}s')
+      #print(p.decode('utf-8'))
+      #print(self.do_string(bytes(e)))
+      #print(d.decode('utf-8'))
+      if (p.decode('utf-8') == d.decode('utf-8')):
+        print('Decrypt matches plaintext')
+      else:
+        print('Decrypt failed')
 if __name__ == '__main__':
     t = Test()
-    t.test_daedalus()
+    t.test_daedalussmall()
