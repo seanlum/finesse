@@ -323,6 +323,7 @@ class Test(unittest.TestCase):
 
     def test_daedalussmall(self):
       from finesse import Daedalus
+      print('Testing with 512KB of plaintext')
       p = ('a' * 512 * 1024).encode('utf-8')
       key = ''.join([ chr(c) for c in os.urandom(2048)])
       k = (key).encode('utf-8')
@@ -338,6 +339,26 @@ class Test(unittest.TestCase):
         print('Decrypt matches plaintext')
       else:
         print('Decrypt failed')
+        
+    def test_daedalus2(self):
+      from finesse import Daedalus2
+      print('Testing with 512KB of plaintext')
+      p = ('a' * 1024 * 512).encode('utf-8')
+      key = ''.join([ chr(c) for c in os.urandom(2048)])
+      k = (key).encode('utf-8')
+      start = time.time()
+      e = Daedalus2.Encrypt(p, k)
+      print(f'Encrypt time: {time.time() - start}s')
+      d = Daedalus2.Decrypt(e, k)
+      print(f'Decrypt time: {time.time() - start}s')
+      #print(p.decode('utf-8'))
+      #print(self.do_string(bytes(e)))
+      #print(d.decode('utf-8'))
+      if (p.decode('utf-8') == d.decode('utf-8')):
+        print('Decrypt matches plaintext')
+      else:
+        print('Decrypt failed')
 if __name__ == '__main__':
     t = Test()
     t.test_daedalussmall()
+    t.test_daedalus2()
